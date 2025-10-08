@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Vote</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .voting-section {
+            padding: 40px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .voting-section h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .voter-input {
+            margin: 20px 0;
+        }
+        
+        .voter-input input {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .voter-input button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            background: white;
+            color: #f5576c;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .voter-input button:hover {
+            transform: scale(1.05);
+        }
+        
+        .voter-name-display {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .leaderboard {
+            padding: 40px 30px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        
+        .leaderboard h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        
+        .leaderboard-item {
+            background: white;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        
+        .leaderboard-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .leaderboard-item.winner {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border: 3px solid #f9a825;
+            transform: scale(1.05);
+        }
+        
+        .leaderboard-rank {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            width: 60px;
+        }
+        
+        .leaderboard-item.winner .leaderboard-rank {
+            color: #d84315;
+        }
+        
+        .leaderboard-game {
+            flex: 1;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .leaderboard-votes {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+            width: 80px;
+        }
+        
+        .games {
+            padding: 40px 30px;
+        }
+        
+        .games h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+        
+        .game-card.recommended {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .game-card.voted {
+            border: 4px solid #4CAF50;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .game-card.recommended .badge {
+            background: #ffd700;
+            color: #333;
+        }
+        
+        .vote-count {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #4CAF50;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .vote-button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .vote-button:hover {
+            background: #45a049;
+            transform: scale(1.02);
+        }
+        
+        .vote-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .vote-button.voted {
+            background: #ff9800;
+        }
+        
+        .vote-button.voted:hover {
+            background: #f57c00;
+        }
+        
+        .game-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        
+        .game-card .price {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .game-card .pitch {
+            font-style: italic;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        
+        .game-card.recommended .pitch {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .pros {
+            margin: 15px 0;
+        }
+        
+        .pros ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .pros li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 0.95em;
+        }
+        
+        .pros li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .game-card.recommended .pros li:before {
+            color: #ffd700;
+        }
+        
+        .specs {
+            background: rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        
+        .game-card.recommended .specs {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .voters-list {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.85em;
+        }
+        
+        .game-card.recommended .voters-list {
+            border-top-color: rgba(255,255,255,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .game-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .voter-input input,
+            .voter-input button {
+                display: block;
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Game Vote</h1>
+            <p>Vote for the game you want to play!</p>
+        </div>
+        
+        <div class="voting-section">
+            <h2>🗳️ Cast Your Vote</h2>
+            <p>Enter your name and vote below. You can change your vote anytime!</p>
+            <div class="voter-input" id="voterInput">
+                <input type="text" id="voterName" placeholder="Enter your name..." maxlength="20">
+                <button id="setNameBtn">Set Name</button>
+            </div>
+            <div id="voterDisplay" style="display: none;">
+                <p>Voting as: <span class="voter-name-display" id="displayName"></span></p>
+                <button id="changeNameBtn" style="background: rgba(255,255,255,0.3); color: white; padding: 8px 20px; border: none; border-radius: 20px; cursor: pointer; margin-top: 10px;">Change Name</button>
+            </div>
+        </div>
+        
+        <div class="leaderboard" id="leaderboard">
+            <h2>🏆 Current Results</h2>
+            <div id="leaderboardContent">
+                <p>Loading votes...</p>
+            </div>
+        </div>
+        
+        <div class="games">
+            <h2>Available Games</h2>
+            <div class="game-grid" id="gameGrid">
+                <!-- Games will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA903rxgg6LKgwEI5qty_WnCurXlvUFjEk",
+            authDomain: "game-server-voting.firebaseapp.com",
+            databaseURL: "https://game-server-voting-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "game-server-voting",
+            storageBucket: "game-server-voting.firebasestorage.app",
+            messagingSenderId: "276691915321",
+            appId: "1:276691915321:web:a0547da441500394d6f3e8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const games = [
+            {
+                id: 'valheim',
+                name: 'Valheim',
+                price: '$20',
+                badge: '🔥 TOP PICK',
+                recommended: true,
+                pitch: 'Viking Minecraft with beautiful graphics. We explore, build epic bases, and fight bosses together. Super chill but rewarding.',
+                pros: [
+                    'Gorgeous graphics for a survival game',
+                    'Clear progression with 10 bosses',
+                    'Can play 1-2 hours and make real progress',
+                    'Not too hardcore or stressful',
+                    'Runs on older PCs'
+                ],
+                specs: 'RAM: 4GB | Storage: 1GB | Players: 1-10'
+            },
+
+            {
+                id: 'terraria',
+                name: 'Terraria',
+                price: '$10',
+                badge: '💎 BEST VALUE',
+                recommended: true,
+                pitch: '2D Minecraft with actual bosses and progression. Explore, fight, build, find loot. 100+ hours of content for $10!',
+                pros: [
+                    'Insanely cheap ($10!)',
+                    'Tons of content and bosses',
+                    'Easy to learn (it\'s 2D)',
+                    'Runs on a potato',
+                    'Can play in short sessions'
+                ],
+                specs: 'RAM: 512MB | Storage: 500MB | Players: 1-16'
+            },
+            {
+                id: 'factorio',
+                name: 'Factorio',
+                price: '$35',
+                badge: '🤓 FOR ENGINEERS',
+                recommended: false,
+                pitch: 'Build a massive automated factory together. Conveyor belts, trains, robots. The factory runs 24/7 even when you\'re offline!',
+                pros: [
+                    'Incredibly satisfying automation',
+                    'Factory runs while you\'re offline',
+                    'Everyone contributes to one goal',
+                    'Free demo available',
+                    'Can disable combat for chill mode'
+                ],
+                specs: 'RAM: 2GB | Storage: 2GB | Players: 1-100+'
+            },
+            {
+                id: 'project-zomboid',
+                name: 'Project Zomboid',
+                price: '$20',
+                badge: '🧟 SURVIVAL',
+                recommended: false,
+                pitch: 'Realistic zombie survival. Build a safehouse, loot the city, farm food, try not to die. Every death tells a story.',
+                pros: [
+                    'Deep survival mechanics',
+                    'Tense but rewarding',
+                    'Long-term base building',
+                    'Great co-op moments',
+                    'Adjustable difficulty'
+                ],
+                specs: 'RAM: 4GB | Storage: 5GB | Players: 4-32'
+            },
+            {
+                id: 'satisfactory',
+                name: 'Satisfactory',
+                price: '$30',
+                badge: '🏭 3D FACTORY',
+                recommended: false,
+                pitch: '3D Factorio with gorgeous graphics. Build factories on an alien planet in first-person. Factory runs 24/7.',
+                pros: [
+                    'Beautiful graphics',
+                    'First-person is immersive',
+                    'No enemies if we don\'t want',
+                    'Mega satisfying automation',
+                    'Perfect for 1-4 players'
+                ],
+                specs: 'RAM: 8GB | Storage: 20GB | Players: 1-4'
+            }
+        ];
+
+        let currentVoter = localStorage.getItem('voterName') || '';
+        let votesData = {};
+
+        // Set up event listeners
+        document.getElementById('setNameBtn').addEventListener('click', () => {
+            const nameInput = document.getElementById('voterName');
+            const name = nameInput.value.trim();
+            if (name) {
+                currentVoter = name;
+                localStorage.setItem('voterName', name);
+                document.getElementById('voterInput').style.display = 'none';
+                document.getElementById('voterDisplay').style.display = 'block';
+                document.getElementById('displayName').textContent = name;
+                renderGames();
+            }
+        });
+
+        document.getElementById('changeNameBtn').addEventListener('click', () => {
+            document.getElementById('voterInput').style.display = 'block';
+            document.getElementById('voterDisplay').style.display = 'none';
+            document.getElementById('voterName').value = currentVoter;
+        });
+
+        async function vote(gameId) {
+            if (!currentVoter) {
+                alert('Please enter your name first!');
+                document.getElementById('voterName').focus();
+                return;
+            }
+
+            const voterRef = ref(database, `voters/${currentVoter}`);
+            await set(voterRef, gameId);
+        }
+
+        function renderGames() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = games.map(game => {
+                const voteCount = votesData[game.id] || 0;
+                const voters = Object.entries(votesData.voters || {})
+                    .filter(([_, gameId]) => gameId === game.id)
+                    .map(([name, _]) => name);
+                const hasVoted = voters.includes(currentVoter);
+
+                return `
+                    <div class="game-card ${game.recommended ? 'recommended' : ''} ${hasVoted ? 'voted' : ''}">
+                        <span class="badge">${game.badge}</span>
+                        <div class="vote-count">${voteCount}</div>
+                        <h3>${game.name}</h3>
+                        <div class="price">${game.price}</div>
+                        <div class="pitch">${game.pitch}</div>
+                        <div class="pros">
+                            <strong>Why you'll love it:</strong>
+                            <ul>
+                                ${game.pros.map(pro => `<li>${pro}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="specs">
+                            <strong>Requirements:</strong><br>
+                            ${game.specs}
+                        </div>
+                        ${voters.length > 0 ? `
+                            <div class="voters-list">
+                                <strong>Voted by:</strong> ${voters.join(', ')}
+                            </div>
+                        ` : ''}
+                        <button class="vote-button ${hasVoted ? 'voted' : ''}" 
+                                data-game-id="${game.id}"
+                                ${!currentVoter ? 'disabled' : ''}>
+                            ${hasVoted ? '✓ You Voted This' : 'Vote for This Game'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners to vote buttons
+            document.querySelectorAll('.vote-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const gameId = button.getAttribute('data-game-id');
+                    vote(gameId);
+                });
+            });
+        }
+
+        function renderLeaderboard() {
+            const gameCounts = {};
+            games.forEach(game => {
+                gameCounts[game.id] = {
+                    name: game.name,
+                    count: votesData[game.id] || 0
+                };
+            });
+
+            const sorted = Object.entries(gameCounts)
+                .sort((a, b) => b[1].count - a[1].count)
+                .filter(([_, data]) => data.count > 0);
+
+            const leaderboardContent = document.getElementById('leaderboardContent');
+            
+            if (sorted.length === 0) {
+                leaderboardContent.innerHTML = '<p style="color: #666;">No votes yet! Be the first to vote!</p>';
+                return;
+            }
+
+            leaderboardContent.innerHTML = sorted.map(([gameId, data], index) => `
+                <div class="leaderboard-item ${index === 0 ? 'winner' : ''}">
+                    <div class="leaderboard-rank">${index === 0 ? '🏆' : `#${index + 1}`}</div>
+                    <div class="leaderboard-game">${data.name}</div>
+                    <div class="leaderboard-votes">${data.count} vote${data.count !== 1 ? 's' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // Listen for vote changes
+        const votersRef = ref(database, 'voters');
+        onValue(votersRef, (snapshot) => {
+            const voters = snapshot.val() || {};
+            
+            // Count votes per game
+            const counts = {};
+            games.forEach(game => counts[game.id] = 0);
+            
+            Object.values(voters).forEach(gameId => {
+                if (counts[gameId] !== undefined) {
+                    counts[gameId]++;
+                }
+            });
+
+            votesData = { ...counts, voters };
+            renderGames();
+            renderLeaderboard();
+        });
+
+        // Initialize
+        if (currentVoter) {
+            document.getElementById('voterInput').style.display = 'none';
+            document.getElementById('voterDisplay').style.display = 'block';
+            document.getElementById('displayName').textContent = currentVoter;
+        }
+
+        renderGames();
+        renderLeaderboard();
+    </script>
+</body>
+</html>
